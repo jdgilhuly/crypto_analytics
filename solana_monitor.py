@@ -10,7 +10,7 @@ def format_lamports_to_sol(lamports):
     """Convert lamports to SOL"""
     return lamports / 1_000_000_000
 
-def get_signature_info(client, signature):
+def get_signature_info(client, signature, console):
     """Get detailed transaction information for a signature"""
     try:
         tx_info = client.get_transaction(
@@ -18,11 +18,11 @@ def get_signature_info(client, signature):
             max_supported_transaction_version=0
         )
         if tx_info is None:
+            console.print(f"[yellow]Transaction {str(signature)[:20]}... not found (might be too old)[/yellow]")
             return None
-        # Return the response object directly
         return tx_info
     except Exception as e:
-        print(f"Error fetching transaction info: {e}")
+        console.print(f"[red]Error fetching transaction {str(signature)[:20]}...: {str(e)}[/red]")
         return None
 
 def display_transaction(console, tx_info):
@@ -61,29 +61,28 @@ def display_transaction(console, tx_info):
     console.print()
 
 def main():
-    # Initialize Rich console for beautiful output
     console = Console()
-
-    # Connect to Solana mainnet
     client = Client("https://api.mainnet-beta.solana.com")
-
     console.print("[bold green]🔍 Monitoring Solana transactions...[/bold green]")
 
     try:
-        # Convert string address to Pubkey
         address = Pubkey.from_string("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
 
-        # Get recent signatures
         while True:
             signatures = client.get_signatures_for_address(address).value
 
+            if not signatures:
+                console.print("[yellow]No recent transactions found[/yellow]")
+            else:
+                console.print(f"[green]Found {len(signatures)} recent transactions[/green]")
+
             for sig_info in signatures[:5]:
-                tx_info = get_signature_info(client, sig_info.signature)
+                tx_info = get_signature_info(client, sig_info.signature, console)
                 if tx_info:
                     display_transaction(console, tx_info)
 
             time.sleep(5)
-            console.print("[bold yellow]Updating...[/bold yellow]")
+            console.print("\n[bold yellow]Updating...[/bold yellow]")
 
     except KeyboardInterrupt:
         console.print("[bold red]Monitoring stopped.[/bold red]")
