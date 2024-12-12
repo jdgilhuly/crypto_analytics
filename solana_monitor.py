@@ -64,18 +64,18 @@ def main():
 
     try:
         # Convert string address to Pubkey
-        address = Pubkey.from_string("1111111111111111111111111111111111111111111")
+        address = Pubkey.from_string("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin")
 
         # Get recent signatures
         while True:
-            signatures = client.get_signatures_for_address(address)['result']
+            signatures = client.get_signatures_for_address(address)
 
-            for sig_info in signatures[:5]:  # Display last 5 transactions
-                tx_info = get_signature_info(client, sig_info['signature'])
+            for sig_info in list(signatures)[:5]:
+                tx_info = get_signature_info(client, sig_info.signature)
                 if tx_info:
                     display_transaction(console, tx_info)
 
-            time.sleep(5)  # Wait 5 seconds before next update
+            time.sleep(5)
             console.print("[bold yellow]Updating...[/bold yellow]")
 
     except KeyboardInterrupt:
