@@ -4,6 +4,7 @@ from rich.table import Table
 from rich.panel import Panel
 from datetime import datetime
 import time
+from solders.pubkey import Pubkey
 
 def format_lamports_to_sol(lamports):
     """Convert lamports to SOL"""
@@ -62,9 +63,12 @@ def main():
     console.print("[bold green]🔍 Monitoring Solana transactions...[/bold green]")
 
     try:
+        # Convert string address to Pubkey
+        address = Pubkey.from_string("1111111111111111111111111111111111111111111")
+
         # Get recent signatures
         while True:
-            signatures = client.get_signatures_for_address("1111111111111111111111111111111111111111111")['result']
+            signatures = client.get_signatures_for_address(address)['result']
 
             for sig_info in signatures[:5]:  # Display last 5 transactions
                 tx_info = get_signature_info(client, sig_info['signature'])
